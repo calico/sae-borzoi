@@ -1,0 +1,5 @@
+{
+  "expansion_factors": [2,4],
+  "topk_pct": [0.05,0.1],
+  "learning_rate": [1e-4,1e-5]
+}
