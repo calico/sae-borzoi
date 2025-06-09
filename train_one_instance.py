@@ -15,7 +15,6 @@ parser.add_argument('--lr', help='learning_rate', type=float, default=1e-5)
 
 args = parser.parse_args()
 
-
 config_file = "config.json"
 with open(config_file) as config_open:
     configs = json.load(config_open)
@@ -23,12 +22,12 @@ with open(config_file) as config_open:
 # Example usage
 input_dim = configs["input_channels"]  # Your activation dimension
 hidden_dim = args.exp_factor * configs["input_channels"]  # Desired hidden layer dimension
-print("args:", args.topk, args.exp_factor, args.lr)
 k = int(args.topk * configs["input_channels"]) # Number of top activations to keep
 learning_rate = args.lr
-sparsity_target = configs["sparsity_target"]
 
-model_save_path = f"models/{configs['layer_name']}_noabs_{args.exp_factor}_topk{args.topk}_lr{args.lr}"
+global_model_path = configs['model_save_path']
+model_save_path = os.path.join(global_model_path, f"{configs['layer_name']}_exp{args.exp_factor}_topk{args.topk}_lr{args.lr}")
+
 
 if not os.path.exists(model_save_path):
     os.makedirs(model_save_path)
@@ -51,7 +50,6 @@ model = train_sparse_autoencoder(
     num_epochs=100,
     learning_rate=learning_rate,
     sparsity_factor=10.0,
-    sparsity_target=sparsity_target,
     patience=2,
     checkpoint_dir=model_save_path,
     global_max=global_max

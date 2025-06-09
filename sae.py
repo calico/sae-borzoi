@@ -420,8 +420,6 @@ def infer_sparse_autoencoder(
 
         fetch_end_time = time.time()
         #print(f"Model fetch time for idx {idx}: {fetch_end_time - fetch_start_time:.4f} seconds")
-
-        # add 1-like batch dimension
         activation = activation.unsqueeze(0)
 
         seq_chrom = seqs_dict[(file_idx, sample_idx)][0][0]
@@ -444,13 +442,33 @@ def infer_sparse_autoencoder(
         values = topk.values # size (k, hidden_dim)
         indices = topk.indices
 
+        if count_acts < 15:
+            arr_acts.append(h_sparse.cpu().detach().numpy())
+            print(f"dict_acts idx {idx}: {np.shape(arr_acts)}")
+            count_acts += 1
+        elif count_acts == 15:
+            with h5py.File(os.path.join(checkpoint_path, f"dict_top_acts_test.h5"), 'w') as f:
+                f.create_dataset('dict_top_acts', data=arr_acts)
+
+        # save as json
+        #with open(os.path.join(checkpoint_path, f"dict_top_acts.json"), 'w') as f:
+        #    json.dump(dict_acts, f)
+        # save arr_acts as numpy
+        #np.save(os.path.join(checkpoint_path, f"dict_top_acts.npy"), arr_acts)
+        # save as h5
+
+        # save as sparse matrix
+        #sparse_matrix = csr_matrix(arr_acts)
+        # save as h5
+        #with h5py.File(os.path.join(checkpoint_path, f"dict_top_acts_sparse.h5"), 'w') as f:
+        #    f.create_dataset('dict_top_acts_sparse', data=sparse_matrix.data)
+        #    f.create_dataset('dict_top_acts_sparse_indices', data=sparse_matrix.indices)
+        #    f.create_dataset('dict_top_acts_sparse_indptr', data=sparse_matrix.indptr)
+
         ind_save_start_time = time.time()
         # transpose the values and indices
         values = values.transpose(0, 1) # size (hidden_dim, k)
         indices = indices.transpose(0, 1) # size (hidden_dim, k)
-
-        # Replace the slow indexing section with this optimized version
-        # This goes inside your infer_sparse_autoencoder function, replacing lines 435-440
 
         # Get indices for sequence coordinates
         base_coords = torch.arange(indices.shape[1], device=device)
@@ -485,13 +503,17 @@ def infer_sparse_autoencoder(
         end_time = time.time()
         #print(f"Total time for idx {idx}: {end_time - start_time:.4f} seconds")
 
+        save_acts = True
         if idx % 200 == 0 and idx != 0 and save_acts:
             df = pd.DataFrame({'node_id': list_nodes, 'activation': list_acts_vals, 'chrom': [x[0] for x in list_seq_coords], 'start': [x[1] for x in list_seq_coords], 'end': [x[2] for x in list_seq_coords]})
-            df.to_csv(os.path.join(checkpoint_path, f'strongest_activations_sort_{current_file_idx}.csv'))
+            df.to_csv(os.path.join(checkpoint_path, f'strongest_activations_test_{current_file_idx}.csv'))
             list_nodes = []
             list_acts_vals = []
             list_seq_coords = []
             current_file_idx += 1
+
+        if current_file_idx >= 16:# and count_acts > 15:
+            break
 
     return
 
@@ -507,7 +529,6 @@ def train_sparse_autoencoder(
     learning_rate: float = 1e-5,
     warmup_steps: int = 100,
     sparsity_factor: float = 10.0,
-    sparsity_target: float = 0.075,
     patience: int = 7,
     num_workers: int = 1,
     sparsity_method: str = "topk_o",

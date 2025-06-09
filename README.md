@@ -16,14 +16,8 @@ All seqlets from these nodes were saved into separate .fa files and analyzed wit
 
 Resulting nodes are visualized with the SAE-vis server, local network address: http://10.11.12.147:7080/.
 
-## Training on hyperparameter grid
+## Training, inferring and analyzing
 
    ```bash
-   python grid_train.py
-   ```
-
-## Inferring on hyperparameter grid
-
-   ```bash
-   python grid_infer.py
+   pipeline.sh
    ```
