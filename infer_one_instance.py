@@ -33,7 +33,10 @@ else:
     global_max = None
 
 global_model_path = configs['model_save_path']
-model_save_path = os.path.join(global_model_path, f"{configs['layer_name']}_exp{args.exp_factor}_topk{args.topk}_lr{args.lr}")
+if configs['prespecified_model'] is not None:
+    model_save_path = os.path.join(global_model_path, configs['prespecified_model'])
+else:
+    model_save_path = os.path.join(global_model_path, f"{configs['layer_name']}_exp{exp_factor}_topk{topk}_lr{lr}")
 
 infer_sparse_autoencoder(
     model_save_path,

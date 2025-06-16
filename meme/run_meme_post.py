@@ -17,7 +17,10 @@ topk = configs['topk_pct']
 lr = configs['learning_rate']
 global_model_path = configs['model_save_path']
 
-model_path = os.path.join(global_model_path, f"{configs['layer_name']}_exp{exp_factor}_topk{topk}_lr{lr}")
+if configs['prespecified_model'] is not None:
+    model_path = os.path.join(global_model_path, configs['prespecified_model'])
+else:
+    model_path = os.path.join(global_model_path, f"{configs['layer_name']}_exp{exp_factor}_topk{topk}_lr{lr}")
 
 try:
     result_path = os.path.join(model_path, "meme_analysis_results")

@@ -23,7 +23,10 @@ global_model_path = configs['model_save_path']
 if not os.path.exists(global_model_path):
     os.makedirs(global_model_path)
 
-model_save_path = os.path.join(global_model_path, f"{configs['layer_name']}_exp{exp_factor}_topk{topk}_lr{lr}")
+if configs['prespecified_model'] is not None:
+    model_save_path = os.path.join(global_model_path, configs['prespecified_model'])
+else:
+    model_save_path = os.path.join(global_model_path, f"{configs['layer_name']}_exp{exp_factor}_topk{topk}_lr{lr}")
 
 if not os.path.exists(model_save_path):
     os.makedirs(model_save_path)

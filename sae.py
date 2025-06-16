@@ -512,7 +512,7 @@ def infer_sparse_autoencoder(
             list_seq_coords = []
             current_file_idx += 1
 
-        if current_file_idx >= 16:# and count_acts > 15:
+        if count_acts > 15:
             break
 
     return
