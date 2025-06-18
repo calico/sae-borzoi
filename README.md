@@ -1,23 +1,114 @@
-# Sparse autoencoders for mechanistic interpretability of the DNA sequence-based model [Borzoi](https://www.nature.com/articles/s41588-024-02053-6) @ f(DNA) Calico
+# SAE-Borzoi: Sparse Autoencoders for Genomic Model Interpretability
 
-We aim to use sparse autoencoders to decompose the activations of the pre-trained Borzoi model into monosemantic concepts that map to known and unknown regulatory motifs.
+This repository implements **Sparse Autoencoders (SAEs)** for mechanistic interpretability of the [Borzoi](https://www.nature.com/articles/s41588-024-02053-6) genomic sequence model. SAEs decompose Borzoi's learned representations into interpretable features that correspond to regulatory motifs and genomic patterns.
 
-We use the top K approach for sparsity described by [L. Gao et al.](https://cdn.openai.com/papers/sparse-autoencoders.pdf) to reconstruct the activations of the first few convoluational layers.
+## Overview
 
-## Pipeline
+SAE-Borzoi uses the **Top-K sparsity approach** ([Gao et al.](https://cdn.openai.com/papers/sparse-autoencoders.pdf)) to reconstruct activations from Borzoi's convolutional layers, enabling identification of monosemantic genomic features.
 
-Example: SAE is learning from the raw conv1d_2 layer output. At this point, each position has seen 18 nucleotides of the input. Training params: expansion factor = 4, LR = 1e-5, global max is on (for each feature dimension in the output, the global max among activations of training sequences was found, and activations were divided by the value), top K activations to keep = 5% (topK along sequence, i.e. top 10% for each seqlet). No L1 loss was used, only MSE and topK. Training was done on input sequences split into 4 parts each (input_len = 5kb/4) to fit into memory more efficiently.
+### Key Features
+- **Interpretable genomic features**: Maps neural activations to known/unknown regulatory motifs
+- **Memory-efficient training**: Processes long sequences (196kb) through subdivision
+- **Automated motif discovery**: Integrates MEME Suite and TomTom for motif analysis
 
-To analyze activations, I first found the top K (=8) chunks of sequence activating each SAE node, i.e. (8, hidden_dim) per input sequence for 400 sequences, where the input sequence is ¼ of the original length. I extracted seqlets corresponding to these activations, and found nodes with 1) at least 1000 seqlets with nonzero activation, 2) at least 200 seqlets with activations > 1/2 mean node activation. The nodes are sorted by mean activation for analysis, i.e. node 1_nXXXX is the top node by mean activation value.
+## Quick Start
 
-All seqlets from these nodes were saved into separate .fa files and analyzed with MEME with max 2 motifs discovered per node, and subsequently TomTom for each node-discovered PWMs using J. Vierstra's archetypical [motif database](https://www.vierstra.org/resources/motif_clustering). Significance was filtered both for MEME results (E-value<0.05) and TomTom (p-val, E-val, q-val all <0.05). 
+### Prerequisites
+- Python 3.8+ with PyTorch
+- MEME Suite for motif analysis
+- SLURM job scheduler (for distributed training)
+- Borzoi model activations in HDF5 format
 
-## Visualization server
+### Running the Pipeline
 
-Resulting nodes are visualized with the SAE-vis server, local network address: http://10.11.12.147:7080/.
-
-## Training, inferring and analyzing
-
-   ```bash
-   pipeline.sh
+1. **Configure paths** in `config/config.json`:
+   ```json
+   {
+     "activations_path": "/path/to/borzoi/activations",
+     "models_save_path": "/path/to/save/models",
+     "expansion_factor": 4,
+     "topk_pct": 0.05,
+     "learning_rate": 1e-5
+   }
    ```
+
+2. **Run the complete pipeline**:
+   ```bash
+   ./pipeline.sh
+   ```
+
+3. **Run specific stages**:
+   ```bash
+   # Run stages 0-3 (preprocessing through sequence extraction)
+   ./pipeline.sh --stage 0 --stop_stage 3
+   
+   # Run only motif discovery (stages 4-6)
+   ./pipeline.sh --stage 4 --stop_stage 6
+   ```
+
+### Pipeline Stages
+
+| Stage | Script | Description |
+|-------|--------|-------------|
+| 0 | `find_global_max.py` | Compute activation normalization values |
+| 1 | `batch_train.py` | Train SAE models (distributed) |
+| 2 | `batch_infer.py` | Run inference to extract top activations |
+| 3 | `save_seqlets.py` | Extract genomic sequences around activations |
+| 4 | `run_meme_multi.py` | Discover motifs with MEME |
+| 5 | `run_meme_post.py` | Post-process MEME results |
+| 6 | `run_tomtom_multi.py` | Match motifs against known databases |
+| 7 | `umap_analysis.py` | Generate UMAP visualizations |
+| 8 | `seqlet_overlaps_analysis.py` | Analyze feature overlaps |
+| 9 | `jaccard.py` | Compute Jaccard similarities |
+
+## Training Parameters
+
+- **Expansion factor**: 4 (hidden dim = 4 × input channels)
+- **Sparsity**: Top 5% activations per sequence
+- **Learning rate**: 1e-5
+- **Input channels**: 608 (conv1d_1 layer)
+- **Sequence length**: 196,608 bp (divided into 4 chunks for memory efficiency)
+- **Loss function**: MSE + Top-K sparsity (no L1 penalty)
+
+## Analysis Workflow
+
+1. **Feature Selection**: Identifies SAE nodes with:
+   - ≥1000 seqlets with non-zero activation
+   - ≥200 seqlets with activation > 0.5× mean
+
+2. **Motif Discovery**: 
+   - MEME: Discovers up to 2 motifs per node (E-value < 0.05)
+   - TomTom: Matches against [Vierstra motif database](https://www.vierstra.org/resources/motif_clustering) (p,q,E-values < 0.05)
+
+3. **Visualization**: SAE-vis server for interactive exploration
+
+## Example Usage
+
+### Train a Single Model
+```bash
+python scripts/train_one_instance.py --topk 0.05 --exp_factor 4 --lr 1e-5
+```
+
+### Run Inference
+```bash
+python scripts/infer_one_instance.py --topk 0.05 --exp_factor 4 --top_acts 16
+```
+
+### Extract Sequences
+```bash
+python scripts/save_seqlets.py
+```
+
+## Visualization
+
+Resulting features are visualized using the SAE-vis server:
+- **Local access**: http://10.11.12.147:7080/
+
+## Citation
+
+If you use this code, please cite:
+- [Borzoi paper](https://www.nature.com/articles/s41588-024-02053-6) for the base model
+
+## License
+
+See individual source files for licensing information.
