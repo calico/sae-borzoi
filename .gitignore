@@ -1,0 +1,8 @@
+config/*layer*
+
+__pycache__/
+
+temp/
+
+*.ipynb
+meme/*.ipynb
