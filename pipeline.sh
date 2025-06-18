@@ -3,7 +3,7 @@
 source ~/.bashrc
 conda activate basenji-torch2
 
-stage=7
+stage=3
 stop_stage=9
 
 . ./parse_options.sh || exit 1;

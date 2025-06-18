@@ -236,11 +236,11 @@ df_rmsk = (df_rmsk - df_rmsk.mean(axis=0))/df_rmsk.max(axis=0)
 df_rmsk.to_csv(os.path.join(model_path, 'model_rmsk_intersect.csv'))
 
 int_nodes = []
-for c in df_states.columns:
+for c in df_rmsk.columns:
     int_nodes.append([df_rmsk.sort_values(by=c, ascending=False).index[0].split('_')[0]])
     
 df_int_nodes = pd.DataFrame(int_nodes, columns=['node'])
 df_int_nodes = df_int_nodes.T
-df_int_nodes.columns = df_states.columns
+df_int_nodes.columns = df_rmsk.columns
 
 df_int_nodes.to_csv(os.path.join(model_path, 'model_rmsk_intersect_top_nodes.csv'), index=None)
