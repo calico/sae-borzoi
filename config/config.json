@@ -1,0 +1,18 @@
+{
+  "activations_path": "/home/anya/code/baskerville_sae/src/baskerville/scripts/v2_activations_test/conv1d_4",
+  "activations_path_val": "/home/anya/code/baskerville_sae/src/baskerville/scripts/v2_activations_val/conv1d_4",
+  "global_max_save_path": "/home/anya/code/baskerville_sae/src/baskerville/scripts/v2_activations/conv1d_4_max.json",
+  "model_save_path": "/home/anya/code/sae_borzoi_4/models/",
+  "prespecified_model": "conv1d_4_noabs_4_topk0.05_lr1e-05",
+  "layer_name": "conv1d_4",
+  "seq_len": 32768,
+  "input_channels": 1056,
+  "expansion_factor": 4,
+  "topk_pct": 0.05,
+  "learning_rate": 1e-5,
+  "ccre_bed": "/home/anya/code/sae_borzoi/meme/GRCh38-cCREs_exons_introns.bed",
+  "rmsk_bed": "/home/anya/code/sae_borzoi/meme/rmsk_hg38.bed",
+  "uniprot": "/home/anya/code/sae_borzoi/meme/uniprotkb_AND_reviewed_true_AND_model_o_2025_02_04.tsv",
+  "cisbp_1": "/home/anya/code/sae_borzoi/meme/cisbp_motif_gene_map_all.json",
+  "cisbp_2": "/home/anya/code/sae_borzoi/meme/cisbp_motif_gene_map.json"
+}
