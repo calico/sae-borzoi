@@ -3,6 +3,25 @@ config/*layer*
 __pycache__/
 
 temp/
+meme/
 
 *.ipynb
 meme/*.ipynb
+
+layer*
+
+test.sh
+
+analysis/sankey.ipynb
+analysis/*.csv
+analysis/*.json
+analysis/*.sb
+
+scripts/symlink*.sh
+scripts/*_.py
+scripts/*_.py
+scripts/*_batch.py
+
+pipeline_batch.sh
+
+copy_files.sh
