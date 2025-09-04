@@ -122,7 +122,6 @@ pip install -r requirements.txt
 
 1. **Feature Selection**: Identifies SAE nodes with:
    - ≥1000 seqlets with non-zero activation
-   - ≥200 seqlets with activation > 0.5× mean
 
 2. **Motif Discovery**: 
    - MEME: Discovers up to 2 motifs per node (E-value < 0.05)
