@@ -65,7 +65,6 @@ pip install -r requirements.txt
 ### Prerequisites
 - Python 3.8+ with PyTorch
 - MEME Suite for motif analysis
-- SLURM job scheduler (for distributed training)
 - Borzoi model activations in HDF5 format
 
 ### Running the Pipeline
