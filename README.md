@@ -27,7 +27,6 @@ SAE-Borzoi uses the **Top-K sparsity approach** ([Gao et al.](https://cdn.openai
 
 ### Key Features
 - **Interpretable genomic features**: Maps node activations to known/unknown regulatory motifs
-- **Memory-efficient training**: Processes long sequences (524kb) through subdivision
 - **Automated motif discovery**: Integrates MEME Suite and TomTom for motif analysis
 
 ## Framework Schematic

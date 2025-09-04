@@ -36,8 +36,11 @@ def hot1_shuffle(ref_1hot, shuffle_window, seed):
     shuffled_seq = ref_1hot.copy()
 
     # test this
-    shuffled_seq[:, start:end, :] = np.random.permutation(ref_1hot[:, start:end, :])
-
+    window = ref_1hot[:, start:end, :].copy()
+    for i in range(window.shape[0]):  # batch dimension
+        np.random.shuffle(window[i])  # shuffle along sequence axis
+    shuffled_seq[:, start:end, :] = window
+    
     print(f"Shuffled sequence from {start} to {end} with seed {seed}: {ref_1hot[:, start:end, :]} -> {shuffled_seq[:, start:end, :]}")
 
     return shuffled_seq
@@ -152,6 +155,13 @@ def main():
         help="Window size for ISM resamples [Default: %default]",
     )
     parser.add_option(
+        "--max_seqs",
+        dest="max_seqs",
+        default=100,
+        type="int",
+        help="Maximum number of sequences to process [Default: %default]",
+    )
+    parser.add_option(
         "--stats",
         dest="snp_stats",
         default="logD2",
@@ -187,7 +197,6 @@ def main():
     else:
         parser.error("Must provide parameter and model files")
 
-    options.shifts = [int(shift) for shift in options.shifts.split(",")]
     options.snp_stats = [snp_stat for snp_stat in options.snp_stats.split(",")]
 
     config_file = options.config_nodes
@@ -229,12 +238,6 @@ def main():
     if options.targets_file is None:
         parser.error("Must provide targets file to clarify stranded datasets")
     targets_df = pd.read_csv(options.targets_file, sep="\t", index_col=0)
-
-    if options.target_genes is not None:
-        target_genes = pd.read_csv(
-            options.target_genes, sep="\t", index_col=None, header=None
-        )
-        target_genes.columns = ["gene_id"]
 
     # handle strand pairs
     if "strand_pair" in targets_df.columns:
@@ -278,10 +281,10 @@ def main():
         node_bed = os.path.join(temp_folder, f"{node_name}.bed")
         
         # Create BED file and get sequence count
-        _ = create_bed_from_fasta(node_fasta, node_bed)
+        _ = create_bed_from_fasta(node_fasta, node_bed, limit_entries=options.max_seqs)
 
         # read sequences from BED
-        seqs_dna, seqs_coords, ism_lengths = bed.make_bed_seqs(
+        seqs_dna, seqs_coords = bed.make_bed_seqs(
             node_bed, options.genome_fasta, params_model["seq_length"], stranded=True
         )
 
@@ -292,10 +295,6 @@ def main():
         if os.path.isfile(scores_h5_file):
             os.remove(scores_h5_file)
         scores_h5 = h5py.File(scores_h5_file, "w")
-        scores_h5.create_dataset(
-            "seqs", dtype="bool", shape=(len(seqs_dna), ism_lengths, 4)
-        )
-        print("Seqs shape:", (len(seqs_dna), ism_lengths, 4))
         for snp_stat in options.snp_stats:
             scores_h5.create_dataset(
                 snp_stat, dtype="float16", shape=(len(seqs_dna), num_targets)
@@ -333,6 +332,15 @@ def main():
             alt_preds = np.array(alt_preds)
             alt_preds = np.mean(alt_preds, axis=0)
 
+            # print shapes
+            print(f"ref_preds: {ref_preds.shape}, alt_preds: {alt_preds.shape}")
+
+            # if dimension == 2, add axis
+            if len(ref_preds.shape) == 2:
+                ref_preds = np.expand_dims(ref_preds, axis=0)
+            if len(alt_preds.shape) == 2:
+                alt_preds = np.expand_dims(alt_preds, axis=0)
+
             ism_scores = snps.compute_scores(
                 ref_preds, alt_preds, options.snp_stats, None
             )
@@ -340,3 +348,7 @@ def main():
                 scores_h5[snp_stat][si, :] = ism_scores[snp_stat]
 
         scores_h5.close()
+
+
+if __name__ == "__main__":
+    main()
