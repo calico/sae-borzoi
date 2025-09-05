@@ -115,7 +115,7 @@ pip install -r requirements.txt
 - **Sparsity**: Top 5% activations per sequence
 - **Learning rate**: 1e-5
 - **Input channels**: 608 (conv1d_1 layer)
-- **Sequence length**: 196,608 bp (divided into 4 chunks for memory efficiency) - further broken into reception window seqlets that comprise the batch
+- **Sequence length**: 524,288bp (divided into 4 chunks for memory efficiency) - further broken into reception window seqlets that comprise the batch
 - **Loss function**: MSE + Top-K sparsity (no L1 penalty)
 
 ## Analysis Workflow
