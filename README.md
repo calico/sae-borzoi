@@ -4,7 +4,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 
-> This repository implements **Sparse Autoencoders (SAEs)** for mechanistic interpretability of the [Borzoi](https://www.nature.com/articles/s41588-024-02053-6) genomic sequence model. SAEs decompose Borzoi's learned representations into interpretable features that correspond to regulatory motifs and genomic patterns.
+> This repository implements **Sparse Autoencoders (SAEs)** for mechanistic interpretability of the Borzoi genomic sequence model. SAEs decompose Borzoi's learned representations into interpretable features that correspond to regulatory motifs and genomic patterns. Results are available at [motifscout.com](http://motifscout.com).
 
 ## Table of Contents
 - [Overview](#overview)
@@ -148,7 +148,7 @@ python scripts/save_seqlets.py
 
 ## Visualization
 
-The features are visualized using the SAE-vis server: [motifscout.com](https://motifscout.com).
+The features are visualized using the SAE-vis server: [motifscout.com](http://motifscout.com).
 
 ## Citation
 
